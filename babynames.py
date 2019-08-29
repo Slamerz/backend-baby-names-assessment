@@ -41,21 +41,34 @@ Suggested milestones for incremental development:
 
 def extract_names(filename):
     """
-    Given a file name for baby.html, returns a list starting with the year string
-    followed by the name-rank strings in alphabetical order.
+    Given a file name for baby.html, returns a list starting with the
+    year string followed by the name-rank strings in alphabetical order.
     ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
     """
-    # +++your code here+++
-    return
+    names_rank_list = []
+    ranked_dict = {}
+    re_year = r'Popularity\sin\s(\d\d\d\d)'
+    re_names = r'<td>(\d+)</td><td>(\w+)</td><td>(\w+)</td>'
+    for f in filename:
+        with open(f) as file:
+            content = file.read()
+            year = re.findall(re_year, content)[0]
+            names = re.findall(re_names, content)
+            names_rank_list.append(year)
+            for name in names:
+                rank, boy, girl = name
+                if boy not in ranked_dict:
+                    ranked_dict[boy] = rank
+                if girl not in ranked_dict:
+                    ranked_dict[girl] = rank
+            [names_rank_list.append('{} {}'.format(name, ranked_dict[name])) for name in sorted(ranked_dict)]
+        return names_rank_list
 
 
 def create_parser():
-    """Create a cmd line parser object with 2 argument definitions"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--summaryfile', help='creates a summary file', action='store_true')
-    # The nargs option instructs the parser to expect 1 or more filenames.
-    # It will also expand wildcards just like the shell, e.g. 'baby*.html' will work.
     parser.add_argument('files', help='filename(s) to parse', nargs='+')
     return parser
 
@@ -69,13 +82,17 @@ def main():
         sys.exit(1)
 
     file_list = args.files
-
-    # option flag
     create_summary = args.summaryfile
+    names_list = extract_names(file_list)
 
-    # +++your code here+++
-    # For each filename, get the names, then either print the text output
-    # or write it to a summary file
+    if create_summary:
+        names = '\n'.join(names_list)+'\n'
+        for filename in file_list:
+            with open(filename + '.summary', 'w') as f:
+                f.write(names)
+    else:
+        for filename in file_list:
+            print(names_list)
 
 
 if __name__ == '__main__':
